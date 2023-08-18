@@ -89,8 +89,14 @@ public class seminar2 {
          }
        }while(left <= right);
 
+       if(left < high){
 
+        quickSort(array, left,high);
+       }
+       if(low < right){
 
+        quickSort(array, low, right);
+       }
     }
 
     public static int binarySearch(int value,int[] array){

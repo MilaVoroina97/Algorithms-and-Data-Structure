@@ -56,58 +56,74 @@ public class MyLinkedList<T> {
    
     }
 
-
+    // метод сортировки выбором
     public void sort(Comparator<T> comparator){
-        Node node = head;
-        while (node != null){
 
-            Node minValueNode = node;
+        Node currentNode = head;
+        while(currentNode != null){
 
-            Node node2 = node.next;
-            while (node2 != null){
-                if (comparator.compare(minValueNode.value, node2.value) > 0){
-                    minValueNode = node2;
+            Node minValueNode = currentNode; // сохраняем в отдельную переменную значение текущей ноды, так как мы не можем сохранять
+            // отдельно индексы, как это бывает в алгоритме быстрой сортировки
+
+            Node indexNode = currentNode.next;
+            while(indexNode != null){
+
+                if(comparator.compare(minValueNode.value, indexNode.value) > 0){ //если первый элемент больше, чем второй, то 
+                    // мы можем утверждать,что минимальный элемент на данный момент - второй элемент: 
+                    // в процессе проходим по всем элементам и ищем самый минимальный
+                    minValueNode = indexNode;
                 }
-                node2 = node2.next;
+                indexNode = indexNode.next;
             }
 
-            if (minValueNode != node){
-                T buf = node.value;
-                node.value = minValueNode.value;
+            if(minValueNode != currentNode){ // если после внутреннего цикла ссылка на текущую ноду поменялась, то нужно произвести
+                // обмен значений(а не сами ноды)
+
+                T buf = currentNode.value;
+                currentNode.value = minValueNode.value;
                 minValueNode.value = buf;
+                
             }
+            currentNode = currentNode.next;
 
-            node = node.next;
         }
     }
 
 
-    public void addLast(T value){
-        Node node = new Node();
-        node.value = value;
-        if (head == null){
-            head = node;
-        }
-        else {
-            Node lastNode = head;
-            while (lastNode.next != null){
-                lastNode = lastNode.next;
-            }
-            lastNode.next = node;
-        }
+    // добавление элемента в конец связанного списка
 
+    public void addLast(T value){
+        Node newNode = new Node();
+        newNode.value= value;
+        if(head == null){
+            head = newNode;
+        }else{
+            Node lastNode = head;
+            while(lastNode.next != null){ // перебираем весь список пока не дойдем до последнего(у него ссылка на следующий элемент 
+                // будет пустая)
+
+                lastNode = lastNode.next;
+
+            }
+
+            lastNode.next = newNode;
+        }
+        // третий частный случай : если у нас в списке только один элемент(он же и является head), то мы затираем на него ссылку
+        head = null; 
     }
 
     public void removeLast(){
-        if (head == null)
+        if(head == null){
             return;
-        Node node = head;
-        while (node.next != null){
-            if (node.next.next == null){
-                node.next = null;
+        }
+        Node currentNode = head;
+        while(currentNode.next != null){
+            if(currentNode.next.next == null){ // частный случай: если у нас только два элемента в списке, то мы просто затираем
+                // ссылку с первого на второй элемент и выходим из метода
+                currentNode.next = null;
                 return;
             }
-            node = node.next;
+            currentNode = currentNode.next;
         }
 
         head = null;
@@ -144,16 +160,18 @@ public class MyLinkedList<T> {
 
     @Override
     public String toString() {
-        StringBuilder stringBuilder = new StringBuilder();
 
+        StringBuilder stringBuilder = new StringBuilder();
         Node node = head;
-        while (node != null){
+        while(node != null){
+
             stringBuilder.append(node.value);
-            stringBuilder.append('\n');
+            stringBuilder.append("\n");
             node = node.next;
         }
 
         return stringBuilder.toString();
+
 
     }
 
