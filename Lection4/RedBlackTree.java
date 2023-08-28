@@ -4,7 +4,7 @@ public class RedBlackTree {
 
     private Node root;
 
-    // добавление новых нод в КЧД
+    // добавление новых нод в красно-черное дерево
 
     public boolean add(int value){
         if(root != null){
