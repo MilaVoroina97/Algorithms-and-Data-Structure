@@ -14,7 +14,6 @@ public class MyLinkedList<T> {
 
     }
 
-    
     public void addFirst(T value){
 
         Node newNode = new Node();
@@ -157,6 +156,142 @@ public class MyLinkedList<T> {
         previousNode.next = null; // указываем предыдущую ссылку как пустую, т.к. не хотим обрабатывать ее на данный момент
 
     }
+
+    // нахождение среднего элемента - самый простой и неэффективный способ
+
+    public T findMiddleElement(){
+
+        if(head == null){
+            return null;
+        }
+        if(head.next == null){
+            return head.value;
+        }
+        if(head.next.next == null){
+
+            return head.next.value;
+        }
+
+        Node currentNode = head;
+        int size = 0;
+        while(currentNode != null){
+
+            currentNode = currentNode.next;
+            size++;
+        }
+
+        currentNode = head;
+        for(int i = 0; i < (size - 1) / 2; i++){
+
+            currentNode = currentNode.next;
+        }
+        return currentNode.value;
+    } 
+
+    // второй способ рекурсивный
+    // создаем вспомогательный класс, чтобы сохранять ссылки размера списка и среднего элемента во время выполнения всех 
+    // рекурсивных вызовов:
+    private class MiddleElemRecursion{
+        Node middleNode;
+        int length = 0;
+    }
+
+    private void findMiddleRecursively(Node node,MiddleElemRecursion middleAux){
+        // в случае если мы достигли конца списка:
+        if(node == null){
+
+            middleAux.length = middleAux.length /2;
+            return;
+        }
+
+        middleAux.length++;
+        findMiddleRecursively(node.next,middleAux);
+        // если мы нашли середину списка: 
+        if(middleAux.length == 0){
+            middleAux.middleNode = node;
+        }
+
+        middleAux.length--;
+
+    }
+
+    public T findMiddleRecursively(){
+        if(head == null){
+            return null;
+        }
+
+        MiddleElemRecursion middleElemRecursion = new MiddleElemRecursion();
+        findMiddleRecursively(head,middleElemRecursion);
+        return middleElemRecursion.middleNode.value;
+    }
+
+    // добавление элемента в середину списка
+
+    public void addInMiddle(int index,T newValue){
+
+        if(head == null){
+            head.value = newValue;
+            return;
+        }
+
+        if(head.next == null){
+            head.next.value = newValue;
+            return;
+        }
+
+        Node newNode = new Node();
+        newNode.value = newValue;
+        if(index >= getLinkedListLength()){
+            System.out.println("Индекс вставки превышает длину списка");
+        }else{
+            Node currentNode = head;
+            int currentIndex = 0;
+            while(currentIndex < index -1){
+                currentNode = currentNode.next;
+                currentIndex++;
+            }
+            newNode.next = currentNode.next;
+            currentNode.next = newNode;
+        }
+
+    }
+
+    private int getLinkedListLength(){
+        int res = 0;
+        Node currentNode = head;
+        while(currentNode != null){
+            currentNode = currentNode.next;
+            res++;
+        }
+        return res++;
+    }
+
+    public void addInTheMiddle(T value, int index){
+
+
+        int position = 0;
+        Node currentNode = head;
+        while(currentNode.next != null && position != index){
+
+            currentNode = currentNode.next;
+            position++;
+        }
+        if(index != position){
+            throw new IndexOutOfBoundsException("index: " + index);
+        }
+        Node newNode = new Node();
+        newNode.value = value;
+        if(head == null){
+            head = newNode;
+        }else{
+
+            newNode.next = currentNode.next;
+            currentNode.next = newNode;
+        }
+
+
+    }
+
 
     @Override
     public String toString() {
