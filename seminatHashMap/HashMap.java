@@ -5,10 +5,11 @@ public class HashMap<K, V> {
 
     private static final int INIT_BUCKET_COUNT = 16;
 
+    private static final double LOAD_FACTOR = 0.5;
 
+    private int size; //кол-во элементов в массиве бакетов
 
     // в основе HashMap должен быть массив типа Bucket(with LinkedList)
-
     private Bucket[] buckets;
 
     public HashMap(int initCount){
@@ -35,7 +36,7 @@ public class HashMap<K, V> {
      class Bucket<K, V>{ //создаем класс корзина, который будет описывать связанный список, в котором хранятся пары ключ-значение
         // указатель на первый элемент связанного списка
         Node head; 
-        private class Node{ //узел связанного списка
+        class Node{ //узел связанного списка
 
             // next - это указатель на следующей узел(элемент) связанного списка
             Node next;
@@ -80,6 +81,11 @@ public class HashMap<K, V> {
 
     public V put(K key,V value){
 
+        if(buckets.length * LOAD_FACTOR <= size){ //расширяем длину массива в два раза перед добавляем, если его длина в два раза 
+            // меньше,чем кол-во элементов
+            recalculate();
+        }
+
         int index = calculateBucketIndex(key);
         // перед добавлением пары необходимо проинициализировать бакет, т.к. массив с бакетами является ссылочным типом, который был
         // создан на основе класса(изначально все элементы массива являются null)
@@ -87,7 +93,7 @@ public class HashMap<K, V> {
         // проверяем, проиницилизирован ли объект по вычисленному индексу
         if(bucket == null){
 
-            bucket = new Bucket();
+             bucket = new Bucket();
             buckets[index] = bucket; // после инициализации бакет с необходимым нам индексом будет уже указывать не на null,а на новый
             // объект бакета
 
@@ -97,9 +103,37 @@ public class HashMap<K, V> {
         entity.key = key;
         entity.value = value;
 
-        return (V) bucket.add(entity);
+        V buff =  (V) bucket.add(entity);
+        if(buff == null){ //если нет повторяющихся ключей и мы добавляем пару как новое значение в массив (возвращаем null),
+            // то увеличиваем размер массива на 1
+            size++;
+        }
 
+        return buff;
     }
+
+
+    private void recalculate(){
+        // перед рекалькуляцией обнуляем кол-во элементов массива для того, чтобы не задвоить само кол-во этих элементов
+        size = 0;
+        Bucket<K,V>[] oldBuckets = buckets;
+        buckets = new Bucket[oldBuckets.length *2];
+        for(int i = 0; i < oldBuckets.length; i++){
+            Bucket<K,V> oldBucket = oldBuckets[i];
+            if(oldBucket != null){ //если бакет был проинициализирован(т.е. не равен null)
+                    // нам нужно пройти по связанному списку, который лежит внутри текущего бакета
+                Bucket.Node node = oldBucket.head;
+                while(node != null){
+                    // здесь мы вызываем метод put опять для того, чтобы перезаписать элемент массива уже с новым индексом
+                    put((K)node.value.key,(V)node.value.value);
+                    node = node.next;
+                }
+
+            }
+        }
+    }
+
+
 
 
 }
