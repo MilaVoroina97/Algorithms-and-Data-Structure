@@ -12,7 +12,7 @@ public class MyHashMap<K, V> implements Iterable<MyHashMap.Entity<K,V>> {
     private int size;
 
     // Массив бакетов (связных списков)
-    private Bucket[] buckets;
+    private Bucket<K,V>[] buckets;
 
     @Override
     public Iterator<MyHashMap.Entity<K,V>> iterator() {
@@ -151,7 +151,7 @@ public class MyHashMap<K, V> implements Iterable<MyHashMap.Entity<K,V>> {
             Node next;
 
             // Значение узла, указывающее на элемент хэш-таблицы
-            Entity value;
+            Entity<K,V> value;
         }
 
         /**
@@ -159,7 +159,7 @@ public class MyHashMap<K, V> implements Iterable<MyHashMap.Entity<K,V>> {
          * @param entity элемент
          * @return
          */
-        public V add(Entity entity){
+        public V add(Entity<K,V> entity){
             Node node = new Node();
             node.value = entity;
 
@@ -172,7 +172,7 @@ public class MyHashMap<K, V> implements Iterable<MyHashMap.Entity<K,V>> {
             while (true){
                 if (currentNode.value.key.equals(entity.key)){
                     V buf = (V)currentNode.value.value;
-                    currentNode.value.value = entity.value;
+                    currentNode.value.value = (V) entity.value;
                     return buf;
                 }
                 if (currentNode.next != null){

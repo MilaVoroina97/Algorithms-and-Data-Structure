@@ -1,16 +1,104 @@
 package Seminar.seminatHashMap;
 
-public class HashMap<K, V> {
+import java.util.Iterator;
+
+public class HashMap<K, V> implements Iterable<HashMap.Entity>{
 
 
     private static final int INIT_BUCKET_COUNT = 16;
 
     private static final double LOAD_FACTOR = 0.5;
 
+    private Bucket.Node currentNode;
+
+    private int currentIndex;
+
     private int size; //кол-во элементов в массиве бакетов
 
     // в основе HashMap должен быть массив типа Bucket(with LinkedList)
     private Bucket[] buckets;
+
+    @Override
+    public Iterator<HashMap.Entity> iterator() {
+        return new HashMapIterator();
+    }
+
+    class HashMapIterator implements Iterator<HashMap.Entity>{
+
+        @Override
+        public boolean hasNext() {
+            // при запуске метода currentNode будет равен null, поэтому нам необходимо сначала проинициализировать currentNode и дать
+            // ему значение из значений массива бакетов
+            if(currentNode == null){
+                for(int i = 0; i < buckets.length; i++){
+                    if(buckets[i] != null && buckets[i].head != null){
+                        currentIndex = i;
+                        currentNode = buckets[i].head;
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            else{
+
+                // if(get((K)currentNode.value.key) == null){  //частный случай : в случай если у ключа нет значения(оно равно null), то
+                //     // считаем, что эта нода пустая 
+                //     currentNode = null;
+                //     currentIndex = 0;
+                //     return hasNext();
+                // }else{
+                    HashMap.Bucket.Node node = currentNode;
+                     currentIndex = calculateBucketIndex((K)node.value.key);
+                    if(node.next != null){ //если в текущей ноде находится не одна пара ключ-значение, то переходим к следующей паре 
+                        // и возвращаем ее 
+                        currentNode = node.next;
+                        return true;
+                    }
+                    // запускаем цикл по проходу всех бакетов в массиве
+
+                    for(int i = ++currentIndex; i < buckets.length; i++){
+                        if(buckets[i] != null && buckets[i].head != null){
+                            currentIndex = i;
+                            currentNode = buckets[i].head;
+                            return true;
+                        }
+                    }
+
+                    // после того мы прошли по всем нодам и бакетам,завершаем метод
+
+                    currentNode  = null;
+                    currentIndex = 0;
+                    return false;
+                }
+            }
+        //}
+
+        @Override
+        public Entity next() {
+
+            if(currentNode == null){
+                for(int i = 0; i < buckets.length; i++){
+                    if(buckets[i] != null && buckets[i].head != null){
+                        currentIndex = i;
+                        currentNode = buckets[i].head;
+                        return currentNode.value;
+                    }
+                }
+                return null;
+            }
+            // else if(get((K)currentNode.value.key) == null){
+
+            //     currentNode = null;
+            //     currentIndex = 0;
+            //     return null;
+            // }
+            else{
+                return currentNode.value;
+            }
+        }   
+        
+    }
 
     public HashMap(int initCount){
 
@@ -71,6 +159,49 @@ public class HashMap<K, V> {
                     }
                 }
             }
+        }
+
+        // метод поиска значения по ключу
+
+        public V findValue(K key){
+            if(head == null){
+                return null;
+            }
+            Node node = head;
+            while(node != null){
+                if(node.value.key.equals(key)){
+                    return (V)node.value.value;
+                }
+                node = node.next;
+
+            }
+
+            return null;
+        }
+
+        public V removeValue(K key){
+            if(head == null){
+                return null;
+            }
+            if(head.value.key.equals(key)){
+                V buf = (V) head.value.value;
+                head = head.next;
+                return buf;
+            }else{
+                Node currentNode = head;
+                while(currentNode.next != null){
+                    if(currentNode.next.value.key.equals(key)){
+
+                        V buff = (V) currentNode.next.value.value;
+                        currentNode.next = currentNode.next.next;
+                        return buff;
+                    }
+                    currentNode = currentNode.next;
+                }
+            }
+
+
+            return null;
         }
     }
 
@@ -133,7 +264,32 @@ public class HashMap<K, V> {
         }
     }
 
+    public V get(K key){
+        int index = calculateBucketIndex(key);
+        Bucket bucket = buckets[index];
+        if (bucket == null){
+            return null;
+        }
+        return (V)bucket.findValue(key);
+    }
 
 
+    public V remove(K key){
+
+        int index = calculateBucketIndex(key);
+        Bucket bucket = buckets[index];
+        if(bucket == null){
+            return null;
+        }
+
+        V buf = (V)bucket.removeValue(key);
+        // если элемент будет равен null(т.е. не существует искомого нами элемента для удаления),то элемент не будет удален и размер
+        // массива (size) останется прежнем, но если удаляемый объект не равен null,то нам необходимо уменьшить size на 1
+
+        if(buf != null){
+            size--;
+        }
+        return buf;
+    }
 
 }
